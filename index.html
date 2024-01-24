@@ -258,61 +258,74 @@
 
 
   /* Button Styles */
-  .ruby {
-    position: relative;
-    display: inline-block;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #ff4d4d; /* Ruby color */
-    color: #fff;
-    border: 2px solid transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s;
-  }
+ .ruby {
+  position: relative;
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #ff4d4d; /* Ruby color */
+  color: #fff;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  margin: 5px; /* Add margin of 5px */
+  transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s, margin 0.3s; /* Include margin in the transition */
+}
 
-  /* Hover Styles */
-  .ruby:hover {
-    background-color: #ff6666; /* Lighter ruby color */
-    border-color: #3366ff; /* Blue border on hover */
-  }
+/* Hover Styles */
+.ruby:hover {
+  background-color: #ff6666; /* Lighter ruby color */
+  border-color: #3366ff; /* Blue border on hover */
+}
 
-  /* Active Styles (Clicked) */
-  .ruby:active {
-    box-shadow: 0 4px 8px rgba(0, 128, 0, 0.3); /* Green shadow on click */
-  }
+/* Active Styles (Clicked) */
+.ruby:active {
+  box-shadow: 0 4px 8px rgba(0, 128, 0, 0.3); /* Green shadow on click */
+}
 
-  /* Neumorphism Effect */
-  .ruby::before,
-  .ruby::after {
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    right: -5px;
-    bottom: -5px;
-    background: inherit;
-    border-radius: 15px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.2);
-    z-index: -1;
-  }
+/* Neumorphism Effect */
+.ruby::before,
+.ruby::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  background: inherit;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.2);
+  z-index: -1;
+}
 
-  /* RGB Glow on Click */
-  .ruby:active::before,
-  .ruby:active::after {
-    box-shadow: 0 0 50px rgba(0, 128, 0, 0.5), inset 0 0 50px rgba(0, 128, 0, 0.5);
-  }
+/* RGB Glow on Click */
+.ruby:active::before,
+.ruby:active::after {
+  box-shadow: 0 0 50px rgba(0, 128, 0, 0.5), inset 0 0 50px rgba(0, 128, 0, 0.5);
+}
 
-  /* Play Sound on Click */
-  .ruby:active {
-    /* Add the sound playback using JavaScript */
-    /* You'll need to add a JavaScript snippet to handle this part */
-  }
+/* Play Sound on Click */
+.ruby:active {
+  /* Add the sound playback using JavaScript */
+  /* You'll need to add a JavaScript snippet to handle this part */
+}
 
-  /* Reset Default Button Focus Styles */
-  .ruby:focus {
-    outline: none;
-  }
+/* Reset Default Button Focus Styles */
+.ruby:focus {
+  outline: none;
+}
+
+/* Neumorphism adjustments for Ruby class */
+.ruby::before,
+.ruby::after {
+  top: -8px; /* Adjusted position for neumorphism effect */
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  border-radius: 20px; /* Increased border-radius for neumorphism effect */
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.3), inset 0 0 25px rgba(255, 255, 255, 0.3); /* Adjusted box-shadow values */
+}
+
 
   /* Add more styling or adjust values as needed */
 
