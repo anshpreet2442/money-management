@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#FFA500"> <!-- Set the theme color to orange (#FFA500) -->
+  <meta name="description" content="Ex[enses Management . Page by Anshpreet">
+   <link rel="icon" type="image/x-icon" href="https://cdn-icons-png.flaticon.com/128/5501/5501375.png">
+    <title>Budget Tracker</title>
+    <style>
+      body {
+          font-family: 'Arial', sans-serif;
+          margin: 0;
+          padding: 0;
+          background-color: #f0f0f0;
+          display: flex;
+          height: 100vh;
+      }
+
+      #sidebar {
+          width: 250px;
+          height: 100%;
+          background-color: #333;
+          padding-top: 20px;
+          color: white;
+      }
+
+      #menu-btn {
+          display: none;
+          cursor: pointer;
+      }
+
+      #menu-popup {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          justify-content: center;
+          align-items: center;
+      }
+
+      #menu-popup-content {
+          background-color: white;
+          padding: 20px;
+          border-radius: 5px;
+          text-align: center;
+      }
+
+      #menu-popup-content button {
+          margin: 5px;
+          padding: 10px;
+      }
+
+      #content {
+          flex: 1;
+          padding: 20px;
+      }
+
+      #transactions {
+          margin-top: 20px;
+      }
+
+      table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 20px;
+      }
+
+      th, td {
+          border: 1px solid #ddd;
+          padding: 10px;
+          text-align: left;
+      }
+
+      th {
+          background-color: #333;
+          color: white;
+      }
+
+      .earned {
+          color: green;
+      }
+
+      .spent {
+          color: red;
+      }
+
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <button class="ruby" onclick="showForm('income')">Add Income</button>
+        <button class="ruby" onclick="showForm('expense')">Add Expense</button>
+        <button class="ruby" onclick="showTransactions()">Show Transactions</button>
+        <button class="ruby"  onclick="showMenu()">Menu</button>
+    </div>
+
+    <div id="menu-popup">
+        <div id="menu-popup-content">
+            <button class="sapphire" onclick="exportToCSV()">Export to CSV</button>
+            <button class="sapphire" onclick="dismissMenu()">Dismiss</button>
+        </div>
+    </div>
+
+    <div id="content">
+        <h1>Budget Tracker</h1>
+        <div id="form-container"></div>
+        <div id="transactions"></div>
+    </div>
+
+    <script>
+        // ... (previous JavaScript code)
+      // Sample data structure
+        let budgetData = {
+            transactions: [],
+            balance: 0,
+        };
+
+        // Load data from local storage
+        if (localStorage.getItem('budgetData')) {
+            budgetData = JSON.parse(localStorage.getItem('budgetData'));
+            updateBalance();
+        }
+
+        function showForm(type) {
+            const formContainer = document.getElementById('form-container');
+            formContainer.innerHTML = `
+                <h3>Add ${type === 'income' ? 'Income' : 'Expense'}</h3>
+                <label for="amount">Amount:</label>
+                <input type="number" id="amount" required>
+                <label for="category">Category:</label>
+                <input type="text" id="category" required>
+                <label for="date">Date:</label>
+                <input type="date" id="date" required>
+                <button style="--hover: #3498db;" onclick="saveTransaction('${type}')">Save</button>
+            `;
+        }
+
+        function saveTransaction(type) {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const category = document.getElementById('category').value;
+            const date = document.getElementById('date').value;
+
+            if (isNaN(amount)) {
+                alert('Please enter a valid amount.');
+                return;
+            }
+
+            const transaction = {
+                type,
+                amount,
+                category,
+                date,
+            };
+
+            budgetData.transactions.push(transaction);
+
+            if (type === 'income') {
+                budgetData.balance += amount;
+            } else {
+                budgetData.balance -= amount;
+            }
+
+            updateBalance();
+            updateTransactions();
+            saveToLocalStorage();
+        }
+
+        function updateBalance() {
+            document.getElementById('content').innerHTML += `
+                <h2>Balance: ${budgetData.balance.toFixed(2)}</h2>
+            `;
+        }
+
+        function updateTransactions() {
+            const transactionsContainer = document.getElementById('transactions');
+            transactionsContainer.innerHTML = `
+                <h3>Transactions</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${budgetData.transactions.map(transaction => `
+                            <tr class="${transaction.type === 'income' ? 'earned' : 'spent'}">
+                                <td>${transaction.type === 'income' ? 'Income' : 'Expense'}</td>
+                                <td>${transaction.amount.toFixed(2)}</td>
+                                <td>${transaction.category}</td>
+                                <td>${transaction.date}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function showTransactions() {
+            updateTransactions();
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('budgetData', JSON.stringify(budgetData));
+        }
+    
+        // Menu functions
+        function showMenu() {
+            document.getElementById('menu-popup').style.display = 'flex';
+        }
+
+        function dismissMenu() {
+            document.getElementById('menu-popup').style.display = 'none';
+        }
+
+        // Export to CSV function
+        function exportToCSV() {
+            const csvContent = "data:text/csv;charset=utf-8," +
+                "Type,Amount,Category,Date\n" +
+                budgetData.transactions.map(transaction =>
+                    `${transaction.type},${transaction.amount},${transaction.category},${transaction.date}`
+                ).join("\n");
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "budget_data.csv");
+            document.body.appendChild(link); // Required for FF
+
+            link.click();
+        }
+    </script>
+</body>
+</html>
+
+<!-- Add this script tag in your HTML file -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var button = document.querySelector('.ruby');
+    var audio = new Audio('https://assets.mixkit.co/active_storage/sfx/216/216.wav');
+
+    button.addEventListener('click', function () {
+      audio.play();
+    });
+  });
+</script>
+<style>
+
+
+
+
+  /* Button Styles */
+  .ruby {
+    position: relative;
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #ff4d4d; /* Ruby color */
+    color: #fff;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s;
+  }
+
+  /* Hover Styles */
+  .ruby:hover {
+    background-color: #ff6666; /* Lighter ruby color */
+    border-color: #3366ff; /* Blue border on hover */
+  }
+
+  /* Active Styles (Clicked) */
+  .ruby:active {
+    box-shadow: 0 4px 8px rgba(0, 128, 0, 0.3); /* Green shadow on click */
+  }
+
+  /* Neumorphism Effect */
+  .ruby::before,
+  .ruby::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: inherit;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.2);
+    z-index: -1;
+  }
+
+  /* RGB Glow on Click */
+  .ruby:active::before,
+  .ruby:active::after {
+    box-shadow: 0 0 50px rgba(0, 128, 0, 0.5), inset 0 0 50px rgba(0, 128, 0, 0.5);
+  }
+
+  /* Play Sound on Click */
+  .ruby:active {
+    /* Add the sound playback using JavaScript */
+    /* You'll need to add a JavaScript snippet to handle this part */
+  }
+
+  /* Reset Default Button Focus Styles */
+  .ruby:focus {
+    outline: none;
+  }
+
+  /* Add more styling or adjust values as needed */
+
+
+
+
+
+  /* Button Styles */
+  .sapphire {
+    position: relative;
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #4CAF50; /* Shining soft green color */
+    background-color: #fff; /* Soft neumorphism green */
+    border: 2px solid #FFA500; /* Soft round orange border */
+    border-radius: 15px;
+    cursor: pointer;
+    transition: color 0.3s, background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
+  }
+
+  /* Hover Styles */
+  .sapphire:hover {
+    color: #008000; /* Green text color on hover */
+    background-color: #c0ffb3; /* Soft neumorphism green on hover */
+    border-color: #3366ff; /* Blue border on hover */
+  }
+
+  /* Active Styles (Clicked) */
+  .sapphire:active {
+    border-color: #800080; /* Purple border on click */
+    background-color: #ffb366; /* Soft orange background on click */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Neumorphism effect on click */
+  }
+
+  /* Default Styles */
+  .sapphire:not(:hover) {
+    background-color: #ffc0cb; /* Soft purple background */
+    border-color: #FFA500; /* Soft orange border on no hover */
+  }
+
+  /* Reset Default Button Focus Styles */
+  .sapphire:focus {
+    outline: none;
+  }
+
+  /* Neumorphism Effect */
+  .sapphire::before,
+  .sapphire::after {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: inherit;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.2);
+    z-index: -1;
+  }
+
+  /* Add more styling or adjust values as needed */
+
+
+
+
+
+
+
+  /* Input Styles */
+  #amount {
+    width: 200px;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #3498db; /* Initial blue border */
+    border-radius: 8px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+
+  /* Animation Styles */
+  @keyframes borderAnimation {
+    0% {
+      border-color: #3498db; /* Blue */
+    }
+    25% {
+      border-color: #2ecc71; /* Green */
+    }
+    50% {
+      border-color: #e74c3c; /* Red */
+    }
+    75% {
+      border-color: #2ecc71; /* Green */
+    }
+    100% {
+      border-color: #3498db; /* Blue */
+    }
+  }
+
+  @keyframes embossAnimation {
+    0% {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3) inset;
+    }
+    100% {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    }
+  }
+
+  /* Apply Animation on Focus */
+  #amount:focus {
+    animation: borderAnimation 2s infinite, embossAnimation 2s infinite;
+    outline: none;
+  }
+
+  /* Reset Default Input Focus Styles */
+  #amount:focus::-webkit-input-placeholder {
+    color: transparent;
+  }
+  #amount:focus::-moz-placeholder {
+    color: transparent;
+  }
+  #amount:focus:-ms-input-placeholder {
+    color: transparent;
+  }
+  #amount:focus::-ms-input-placeholder {
+    color: transparent;
+  }
+  #amount:focus::placeholder {
+    color: transparent;
+  }
+
+  /* Add more styling or adjust values as needed */
+
+
+  /* Label Styles */
+  label {
+    color: #ffa500; /* Orange text color */
+    font-family: 'Courier New', monospace; /* Typewriter font */
+    font-size: 16px;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  /* Input Styles */
+  #category {
+    width: 200px;
+    padding: 10px;
+    font-family: 'Courier New', monospace; /* Typewriter font */
+    border: 2px solid #800080; /* Initial purple border */
+    border-radius: 8px;
+    transition: border-color 0.5s, box-shadow 0.5s;
+    outline: none;
+  }
+
+  /* Animation Styles */
+  @keyframes borderAnimation {
+    0% {
+      border-color: #800080; /* Purple */
+    }
+    33% {
+      border-color: #ffa500; /* Orange */
+    }
+    66% {
+      border-color: #40e0d0; /* Turquoise Blue */
+    }
+    100% {
+      border-color: #b0c4de; /* Light Steel Blue (for glassmorphism effect) */
+    }
+  }
+
+  /* Apply Animation on Focus */
+  #category:focus {
+    animation: borderAnimation 3s infinite alternate, embossAnimation 3s infinite;
+  }
+
+  @keyframes embossAnimation {
+    0% {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3) inset;
+    }
+    100% {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    }
+  }
+
+  /* Reset Default Input Focus Styles */
+  #category:focus::-webkit-input-placeholder {
+    color: transparent;
+  }
+  #category:focus::-moz-placeholder {
+    color: transparent;
+  }
+  #category:focus:-ms-input-placeholder {
+    color: transparent;
+  }
+  #category:focus::-ms-input-placeholder {
+    color: transparent;
+  }
+  #category:focus::placeholder {
+    color: transparent;
+  }
+
+
+
+
+
+
+
+  /* Label Styles */
+  label {
+    color: #ffa500; /* Orange text color */
+    font-family: 'Courier New', monospace; /* Typewriter font */
+    font-size: 16px;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  /* Input Styles */
+  #date {
+    width: 200px;
+    padding: 10px;
+    font-family: 'Courier New', monospace; /* Typewriter font */
+    border: 2px solid #800080; /* Initial purple border */
+    border-radius: 8px;
+    transition: border-color 0.5s, box-shadow 0.5s;
+    outline: none;
+  }
+
+  /* Animation Styles */
+  @keyframes borderAnimation {
+    0% {
+      border-color: #800080; /* Purple */
+    }
+    33% {
+      border-color: #ffa500; /* Orange */
+    }
+    66% {
+      border-color: #40e0d0; /* Turquoise Blue */
+    }
+    100% {
+      border-color: #b0c4de; /* Light Steel Blue (for glassmorphism effect) */
+    }
+  }
+
+  /* Apply Animation on Focus */
+  #date:focus {
+    animation: borderAnimation 3s infinite alternate, embossAnimation 3s infinite;
+  }
+
+  @keyframes embossAnimation {
+    0% {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.3) inset;
+    }
+    100% {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1) inset;
+    }
+  }
+
+  /* Reset Default Input Focus Styles */
+  #date:focus::-webkit-input-placeholder {
+    color: transparent;
+  }
+  #date:focus::-moz-placeholder {
+    color: transparent;
+  }
+  #date:focus:-ms-input-placeholder {
+    color: transparent;
+  }
+  #date:focus::-ms-input-placeholder {
+    color: transparent;
+  }
+  #date:focus::placeholder {
+    color: transparent;
+  }
+
+
+
+
+
+
+
+
+
+  .fill:hover,
+  .fill:focus {
+    box-shadow: inset 0 0 0 2em var(--hover);
+  }
+
+  // Animate the size, outside
+  .pulse:hover, 
+  .pulse:focus {
+    animation: pulse 1s;
+    box-shadow: 0 0 0 2em transparent;
+  }
+
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 var(--hover); }
+  }
+
+  // Stack multiple shadows, one from the left, the other from the right
+  .close:hover,
+  .close:focus {
+    box-shadow: 
+      inset -3.5em 0 0 0 var(--hover),
+      inset 3.5em 0 0 0 var(--hover);  
+  }
+
+  // Size can also be negative; see how it's smaller than the element
+  .raise:hover,
+  .raise:focus {
+    box-shadow: 0 0.5em 0.5em -0.4em var(--hover);
+    transform: translateY(-0.25em);
+  }
+
+  // Animating from the bottom
+  .up:hover,
+  .up:focus {
+    box-shadow: inset 0 -3.25em 0 0 var(--hover);
+  }
+
+  // And from the left
+  .slide:hover,
+  .slide:focus {
+    box-shadow: inset 6.5em 0 0 0 var(--hover);
+  }
+
+  // Multiple shadows, one on the outside, another on the inside
+  .offset {  
+    box-shadow: 
+      0.3em 0.3em 0 0 var(--color),
+      inset 0.3em 0.3em 0 0 var(--color);
+
+    &:hover,
+    &:focus {
+      box-shadow: 
+        0 0 0 0 var(--hover),
+        inset 6em 3.5em 0 0 var(--hover);
+    }
+  }
+
+  //=== Set button colors
+  // If you wonder why use Sass vars or CSS custom properties...
+    // Make a map with the class names and matching colors
+  $colors: (
+    fill: #a972cb,
+    pulse: #ef6eae, 
+    close: #ff7f82, 
+    raise: #ffa260, 
+    up: #e4cb58, 
+    slide: #8fc866, 
+    offset: #19bc8b
+  );
+
+  // Sass variables compile to a static string; CSS variables are dynamic and inherited
+    // Loop through the map and set CSS custom properties using Sass variables
+  @each $button, $color in $colors {
+    .#{$button} {
+      --color: #{$color};
+      --hover: #{adjust-hue($color, 45deg)};
+    }
+  }
+
+  // Now every button will have different colors as set above. We get to use the same structure, only changing the custom properties.
+  button {  
+    color: var(--color);
+    transition: 0.25s;
+
+    &:hover,
+    &:focus { 
+      border-color: var(--hover);
+      color: #fff;
+    }
+  }
+
+  //=== Pen styling, ignore
+  body {
+    color: #fff;
+    background: hsl(227, 10%, 10%);
+    font: 300 1em 'Fira Sans', sans-serif;
+
+    // Center everything ever
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh;
+    display: flex;
+  }
+
+  // Basic button styles
+  button {
+    background: none;
+    border: 2px solid;
+    font: inherit;
+    line-height: 1;
+    margin: 0.5em;
+    padding: 1em 2em;
+  }
+
+  h1 { font-weight: 400; }
+
+  code { 
+    color: #e4cb58;
+    font: inherit;
+  }
+
+
+
+
+
+
+
+  button:hover,
+  button:focus {
+    animation: pulse 1s;
+    box-shadow: 0 0 0 2em transparent;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 var(--hover);
+    }
+  }
+
+
+  
+  
+  
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Add this script tag in your HTML file -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var dateInput = document.getElementById('date');
+
+    dateInput.addEventListener('input', function () {
+      // Get the selected date
+      var selectedDate = new Date(dateInput.value);
+
+      // Get the current date
+      var currentDate = new Date();
+
+      // Calculate the date 3 days from now
+      var threeDaysLater = new Date();
+      threeDaysLater.setDate(currentDate.getDate() + 3);
+
+      // Check if the selected date is at least 3 days later
+      if (selectedDate < threeDaysLater) {
+        // If not, set the value to an empty string
+        dateInput.value = '';
+        alert('Please select a date that is at least 3 days later.');
+      }
+    });
+  });
+</script>
