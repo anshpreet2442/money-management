@@ -136,7 +136,7 @@
                 <input type="text" id="category" required>
                 <label for="date">Date:</label>
                 <input type="date" id="date" required>
-                <button style="--hover: #3498db;" onclick="saveTransaction('${type}')">Save</button>
+                <button style="--hover: #ccccff;" onclick="saveTransaction('${type}')">Save</button>
             `;
         }
 
@@ -744,7 +744,63 @@
   }
 
 
-  
+
+
+
+
+
+
+
+
+  body {
+    background: url('https://img.freepik.com/free-photo/background_53876-32170.jpg?w=1380&t=st=1706081172~exp=1706081772~hmac=ce997fadf05be6f0af41de2f985deb3d4b2b1b495d25d92248be0d979393e951') repeat;
+    font-family: 'Merienda', cursive;
+  }
+
+  h3 {
+    display: inline-block;
+    color: transparent; /* Make text color transparent */
+    background-clip: text; /* Clip the background to the text */
+    background-image: url('https://rgbtexture1.etus.link');
+    background-size: cover;
+  }
+
+  h3:hover {
+    position: relative;
+    text-decoration: none;
+    color: #333; /* Change the color when hovering */
+  }
+
+  h3:hover::before,
+  h3:hover::after {
+    content: "";
+    position: absolute;
+    height: 2px;
+    width: 0;
+    bottom: 0;
+    background: #333; /* Underline color */
+    transition: width 0.3s; /* Animation duration */
+  }
+
+  h3:hover::before {
+    left: 50%; /* Start from the middle and expand to the left */
+    transform: translateX(-50%);
+  }
+
+  h3:hover::after {
+    right: 50%; /* Start from the middle and expand to the right */
+    transform: translateX(50%);
+  }
+
+
+
+    @font-face {
+        font-family: 'Kaushan Script';
+        src: url('https://github.com/anshpreet2442/publicfonts/raw/main/fonts/Merienda-VariableFont_wght.ttf') format('truetype');
+        font-weight: normal;
+        font-style: normal;
+    }
+
   
   
 </style>
@@ -752,7 +808,12 @@
 
 
 
-
+<style>
+  ::selection {
+    background-color: #FF2C75;
+    color: #fff; /* text color in the selected area */
+  }
+</style>
 
 
 
