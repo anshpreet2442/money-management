@@ -114,8 +114,7 @@
     </div>
 
     <script>
-        // ... (previous JavaScript code)
-      // Sample data structure
+        // Sample data structure
         let budgetData = {
             transactions: [],
             balance: 0,
@@ -125,19 +124,22 @@
         if (localStorage.getItem('budgetData')) {
             budgetData = JSON.parse(localStorage.getItem('budgetData'));
             updateBalance();
+            updateTransactions();
         }
 
-        function showForm(type) {
+        function showForm(type, editIndex = null) {
             const formContainer = document.getElementById('form-container');
+            const transactionToEdit = editIndex !== null ? budgetData.transactions[editIndex] : null;
+
             formContainer.innerHTML = `
-                <h3>Add ${type === 'income' ? 'Income' : 'Expense'}</h3>
+                <h3>${editIndex !== null ? 'Edit' : 'Add'} ${type === 'income' ? 'Income' : 'Expense'}</h3>
                 <label for="amount">Amount:</label>
-               <input type="number" id="amount" required min="1">
+                <input type="number" id="amount" value="${transactionToEdit ? transactionToEdit.amount : ''}" required>
                 <label for="category">Category:</label>
-                <input type="text" id="category" required>
+                <input type="text" id="category" value="${transactionToEdit ? transactionToEdit.category : ''}" required>
                 <label for="date">Date:</label>
-                <input type="date" id="date" required>
-                <button style="--hover: #ccccff;" onclick="saveTransaction('${type}')">Save</button>
+                <input type="date" id="date" value="${transactionToEdit ? transactionToEdit.date : ''}" required>
+                <button onclick="${editIndex !== null ? `editTransaction(${editIndex})` : `saveTransaction('${type}')`}">${editIndex !== null ? 'Update' : 'Save'}</button>
             `;
         }
 
@@ -171,10 +173,41 @@
             saveToLocalStorage();
         }
 
-        function updateBalance() {
-            document.getElementById('content').innerHTML += `
-                <h2>Balance: ${budgetData.balance.toFixed(2)}</h2>
-            `;
+        function editTransaction(index) {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const category = document.getElementById('category').value;
+            const date = document.getElementById('date').value;
+
+            if (isNaN(amount)) {
+                alert('Please enter a valid amount.');
+                return;
+            }
+
+            const updatedTransaction = {
+                type: budgetData.transactions[index].type,
+                amount,
+                category,
+                date,
+            };
+
+            const originalAmount = budgetData.transactions[index].amount;
+
+            if (updatedTransaction.type === 'income') {
+                budgetData.balance = budgetData.balance - originalAmount + updatedTransaction.amount;
+            } else {
+                budgetData.balance = budgetData.balance + originalAmount - updatedTransaction.amount;
+            }
+
+            budgetData.transactions[index] = updatedTransaction;
+
+            updateBalance();
+            updateTransactions();
+            saveToLocalStorage();
+            showForm(updatedTransaction.type);
+        }
+
+        function showTransactions() {
+            updateTransactions();
         }
 
         function updateTransactions() {
@@ -188,15 +221,17 @@
                             <th>Amount</th>
                             <th>Category</th>
                             <th>Date</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        ${budgetData.transactions.map(transaction => `
+                        ${budgetData.transactions.map((transaction, index) => `
                             <tr class="${transaction.type === 'income' ? 'earned' : 'spent'}">
                                 <td>${transaction.type === 'income' ? 'Income' : 'Expense'}</td>
                                 <td>${transaction.amount.toFixed(2)}</td>
                                 <td>${transaction.category}</td>
                                 <td>${transaction.date}</td>
+                                <td><button onclick="showForm('${transaction.type}', ${index})">Edit</button></td>
                             </tr>
                         `).join('')}
                     </tbody>
@@ -204,15 +239,6 @@
             `;
         }
 
-        function showTransactions() {
-            updateTransactions();
-        }
-
-        function saveToLocalStorage() {
-            localStorage.setItem('budgetData', JSON.stringify(budgetData));
-        }
-    
-        // Menu functions
         function showMenu() {
             document.getElementById('menu-popup').style.display = 'flex';
         }
@@ -221,7 +247,6 @@
             document.getElementById('menu-popup').style.display = 'none';
         }
 
-        // Export to CSV function
         function exportToCSV() {
             const csvContent = "data:text/csv;charset=utf-8," +
                 "Type,Amount,Category,Date\n" +
@@ -236,6 +261,16 @@
             document.body.appendChild(link); // Required for FF
 
             link.click();
+        }
+
+        function updateBalance() {
+            document.getElementById('content').innerHTML += `
+                <h2>Balance: ${budgetData.balance.toFixed(2)}</h2>
+            `;
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('budgetData', JSON.stringify(budgetData));
         }
     </script>
 </body>
@@ -816,7 +851,82 @@
     }
 
   
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+button {
+  position: relative;
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #ffa600;
+  color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, #4CAF50, #2196F3);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+button:hover::before {
+  opacity: 1;
+}
+
+button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  background-image: url('https://em-content.zobj.net/source/telegram/386/money-mouth-face_1f911.webp');
+  background-size: cover;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+button:hover::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(0.8);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+    
 </style>
 
 
